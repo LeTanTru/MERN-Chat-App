@@ -1,4 +1,5 @@
 import User from '../models/user.model.js';
+import Message from '../models/message.model.js';
 
 export const getUsersForSidebar = async (req, res) => {
   try {
@@ -6,7 +7,7 @@ export const getUsersForSidebar = async (req, res) => {
     const filteredUsers = await User.find({
       _id: { $ne: loggedInUserId }
     }).select('-password');
-    res.stauts(200).json({
+    res.status(200).json({
       message: 'Users fetched successfully',
       users: filteredUsers
     });
@@ -20,10 +21,13 @@ export const getMessages = async (req, res) => {
   try {
     const { id: userToChatId } = req.params;
     const myId = req.user._id;
+
     const messages = await Message.find({
-      $or: [{ senderId: myId, receiverId: userToChatId }],
-      $or: [{ senderId: userToChatId, receiverId: myId }]
-    });
+      $or: [
+        { senderId: myId, receiverId: userToChatId },
+        { senderId: userToChatId, receiverId: myId }
+      ]
+    }).sort({ createdAt: 1 });
 
     return res.status(200).json({
       message: 'Messages fetched successfully',

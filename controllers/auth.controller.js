@@ -2,10 +2,6 @@ import cloudinary from '../libs/cloudinary.js';
 import { generateToken, validateEmail } from '../libs/utils.js';
 import User from '../models/user.model.js';
 import bcrypt from 'bcryptjs';
-import fs from 'fs';
-import multer from 'multer';
-
-const upload = multer({ dest: 'tmp/' });
 
 export const signup = async (req, res) => {
   if (!req.body) {
@@ -56,7 +52,9 @@ export const signup = async (req, res) => {
           _id: newUser._id,
           fullName: newUser.fullName,
           email: newUser.email,
-          profilePic: newUser.profilePic
+          profilePic: newUser.profilePic,
+          createdAt: newUser.createdAt,
+          updatedAt: newUser.updatedAt
         }
       });
     } else {
@@ -103,7 +101,9 @@ export const login = async (req, res) => {
         _id: user._id,
         fullName: user.fullName,
         email: user.email,
-        profilePic: user.profilePic
+        profilePic: user.profilePic,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt
       }
     });
   } catch (error) {
@@ -176,7 +176,9 @@ export const updateProfile = async (req, res) => {
         _id: updatedUser._id,
         email: updatedUser.email,
         fullName: updatedUser.fullName,
-        profilePic: updatedUser.profilePic
+        profilePic: updatedUser.profilePic,
+        createdAt: updatedUser.createdAt,
+        updatedAt: updatedUser.updatedAt
       }
     });
   } catch (error) {
