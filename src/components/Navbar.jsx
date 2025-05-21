@@ -17,7 +17,7 @@ const Navbar = () => {
     await logout();
   };
   return (
-    <header className='bg-base-100 border-base-300 backdrop-blur-bg bg-base-100/80 fixed top-0 z-40 w-full border-b'>
+    <header className='bg-base-100 border-base-300 bg-base-100/80 fixed top-0 z-40 w-full border-b backdrop-blur-lg'>
       <div className='container mx-auto h-16 px-4'>
         <div className='flex h-full items-center justify-between'>
           <div className='flex items-center gap-8'>

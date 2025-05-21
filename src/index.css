@@ -1,6 +1,13 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
 @import 'tailwindcss';
-@plugin "daisyui";
+@plugin "daisyui" {
+  themes:
+    'light', 'dark', 'cupcake', 'bumblebee', 'emerald', 'corporate',
+    'synthwave', 'retro', 'cyberpunk', 'valentine', 'halloween', 'garden',
+    'forest', 'aqua', 'lofi', 'pastel', 'fantasy', 'wireframe', 'black',
+    'luxury', 'dracula', 'cmyk', 'autumn', 'business', 'acid', 'lemonade',
+    'night', 'coffee', 'winter', 'dim', 'nord', 'sunset';
+}
 
 @theme {
   --font-inter: 'Inter', sans-serif;

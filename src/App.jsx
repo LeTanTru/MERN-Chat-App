@@ -8,6 +8,7 @@ import {
   SignUpPage
 } from '@/pages';
 import { useAuthStore } from '@/store/useAuthStore';
+import { useThemeStore } from '@/store/useThemeStore';
 import { Loader } from 'lucide-react';
 import { useEffect } from 'react';
 import { createPortal } from 'react-dom';
@@ -16,6 +17,7 @@ import { Bounce, ToastContainer } from 'react-toastify';
 
 const App = () => {
   const { authUser, checkAuth, isCheckingAuth } = useAuthStore();
+  const { theme } = useThemeStore();
   useEffect(() => {
     checkAuth();
   }, [checkAuth]);
@@ -29,7 +31,7 @@ const App = () => {
   }
 
   return (
-    <div>
+    <div data-theme={theme}>
       <Navbar />
       <Routes>
         <Route path='/' element={<PrivateRoute element={<HomePage />} />} />

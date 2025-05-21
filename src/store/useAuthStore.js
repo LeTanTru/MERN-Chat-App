@@ -8,11 +8,12 @@ export const useAuthStore = create((set) => ({
   isSigningUp: false,
   isLoggingIn: false,
   isUpdatingProfile: false,
+  onlineUsers: [],
 
   checkAuth: async () => {
     try {
       const res = await axiosInstance.get('/auth/check');
-      set({ authUser: res.user });
+      set({ authUser: res.data.user });
     } catch (error) {
       console.error('Error checking auth:', error);
       set({ authUser: null });
@@ -25,7 +26,7 @@ export const useAuthStore = create((set) => ({
     set({ isSigningUp: true });
     try {
       const res = await axiosInstance.post('/auth/signup', data);
-      set({ authUser: res.data });
+      set({ authUser: res.data.user });
       showSuccessMessage({
         message: 'Account created successfully !'
       });
@@ -58,7 +59,7 @@ export const useAuthStore = create((set) => ({
     set({ isLoggingIn: true });
     try {
       const res = await axiosInstance.post('/auth/login', data);
-      set({ authUser: res.data });
+      set({ authUser: res.data.user });
       showSuccessMessage({
         message: 'Logged in successfully !'
       });
@@ -70,5 +71,32 @@ export const useAuthStore = create((set) => ({
     } finally {
       set({ isLoggingIn: false });
     }
-  }
+  },
+
+  uploadImage: async (file) => {
+    try {
+      const formData = new FormData();
+      formData.append('image', file);
+
+      const res = await axiosInstance.post('/auth/upload-image', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+
+      showSuccessMessage({
+        message: 'Image uploaded successfully!'
+      });
+
+      return res.data; // { url, public_id }
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      showErrorMessage({
+        message: error.response?.data?.message || 'Image upload failed'
+      });
+      return null;
+    }
+  },
+
+  updateProfile: async (data) => {}
 }));
