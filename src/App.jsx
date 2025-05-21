@@ -1,35 +1,67 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import Navbar from '@/components/Navbar';
+import PrivateRoute from '@/components/PrivateRoute';
+import {
+  HomePage,
+  LoginPage,
+  ProfilePage,
+  SettingsPage,
+  SignUpPage
+} from '@/pages';
+import { useAuthStore } from '@/store/useAuthStore';
+import { Loader } from 'lucide-react';
+import { useEffect } from 'react';
+import { createPortal } from 'react-dom';
+import { Route, Routes } from 'react-router-dom';
+import { Bounce, ToastContainer } from 'react-toastify';
 
-function App() {
-  const [count, setCount] = useState(0)
+const App = () => {
+  const { authUser, checkAuth, isCheckingAuth } = useAuthStore();
+  useEffect(() => {
+    checkAuth();
+  }, [checkAuth]);
+
+  if (isCheckingAuth && !authUser) {
+    return (
+      <div className='flex h-screen items-center justify-center'>
+        <Loader className='size-10 animate-spin stroke-white' />
+      </div>
+    );
+  }
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
-}
+    <div>
+      <Navbar />
+      <Routes>
+        <Route path='/' element={<PrivateRoute element={<HomePage />} />} />
 
-export default App
+        <Route path='/signup' element={<SignUpPage />} />
+        <Route path='/login' element={<LoginPage />} />
+        <Route
+          path='/profile'
+          element={<PrivateRoute element={<ProfilePage />} />}
+        />
+        <Route
+          path='/settings'
+          element={<PrivateRoute element={<SettingsPage />} />}
+        />
+      </Routes>
+      {createPortal(
+        <ToastContainer
+          position='top-right'
+          autoClose={5000}
+          hideProgressBar={false}
+          newestOnTop={false}
+          closeOnClick={false}
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+          theme='light'
+          transition={Bounce}
+        />,
+        document.body
+      )}
+    </div>
+  );
+};
+export default App;
