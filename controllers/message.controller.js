@@ -1,5 +1,6 @@
 import User from '../models/user.model.js';
 import Message from '../models/message.model.js';
+import { getReceiverSockerId, io } from '../libs/socket.js';
 
 export const getUsersForSidebar = async (req, res) => {
   try {
@@ -51,6 +52,13 @@ export const sendMessage = async (req, res) => {
       image
     });
     const savedMessage = await newMessage.save();
+
+    const receiverSocketid = getReceiverSockerId(receiverId);
+
+    // Emit the message to the receiver if they are online
+    if (receiverSocketid) {
+      io.to(receiverSocketid).emit('newMessage', newMessage);
+    }
 
     res.status(201).json({
       message: 'Message sent successfully',
