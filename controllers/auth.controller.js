@@ -1,4 +1,3 @@
-import cloudinary from '../libs/cloudinary.js';
 import { generateToken, validateEmail } from '../libs/utils.js';
 import User from '../models/user.model.js';
 import bcrypt from 'bcryptjs';
