@@ -4,15 +4,37 @@ import MessageSkeleton from '@/components/skeleton/MessageSkeleton';
 import { formatMessageTime } from '@/libs/utils';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useChatStore } from '@/store/useChatStore';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 
 const ChatContainer = () => {
-  const { messages, getMessages, isMessagesLoading, selectedUser } =
-    useChatStore();
+  const {
+    messages,
+    getMessages,
+    isMessagesLoading,
+    selectedUser,
+    subscribeToMessages,
+    unsubscribeFromMessages
+  } = useChatStore();
   const { authUser } = useAuthStore();
+  const messageRef = useRef(null);
+
   useEffect(() => {
     getMessages(selectedUser._id);
-  }, [selectedUser._id, getMessages]);
+    subscribeToMessages();
+
+    return () => unsubscribeFromMessages();
+  }, [
+    selectedUser._id,
+    getMessages,
+    subscribeToMessages,
+    unsubscribeFromMessages
+  ]);
+
+  useEffect(() => {
+    if (messageRef.current) {
+      messageRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [messages]);
 
   if (isMessagesLoading)
     return (
@@ -30,6 +52,7 @@ const ChatContainer = () => {
           <div
             className={`chat ${message.senderId === authUser._id ? 'chat-end' : 'chat-start'}`}
             key={message._id}
+            ref={messageRef}
           >
             <div className='chat-image avatar'>
               <div className='size-10 rounded-full border'>
@@ -45,8 +68,6 @@ const ChatContainer = () => {
             </div>
             <div className='chat-header mb-1'>
               <time className='ml-1 text-xs opacity-50'>
-                {/* {message.createdAt.split('T')[0]}{' '}
-                {message.createdAt.split('T')[1].split('.')[0]} */}
                 {formatMessageTime(message.createdAt)}
               </time>
             </div>

@@ -16,7 +16,7 @@ import { Route, Routes } from 'react-router-dom';
 import { Bounce, ToastContainer } from 'react-toastify';
 
 const App = () => {
-  const { authUser, checkAuth, isCheckingAuth } = useAuthStore();
+  const { authUser, checkAuth, isCheckingAuth, onlineUsers } = useAuthStore();
   const { theme } = useThemeStore();
   useEffect(() => {
     checkAuth();

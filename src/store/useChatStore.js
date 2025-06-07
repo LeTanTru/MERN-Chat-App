@@ -1,12 +1,13 @@
 import { axiosInstance } from '@/libs/axios';
+import { useAuthStore } from '@/store/useAuthStore';
 import { create } from 'zustand';
 
 export const useChatStore = create((set, get) => ({
   messages: [],
   users: [],
   selectedUser: null,
-  isUsersLoading: null,
-  isMessagesLoading: null,
+  isUsersLoading: false,
+  isMessagesLoading: false,
 
   getUsers: async () => {
     set({ isUsersLoading: true });
@@ -15,7 +16,6 @@ export const useChatStore = create((set, get) => ({
       set({ users: response.data.users });
     } catch (error) {
       console.error('Error fetching users:', error);
-      set({ isUsersLoading: false });
     } finally {
       set({ isUsersLoading: false });
     }
@@ -28,14 +28,13 @@ export const useChatStore = create((set, get) => ({
       set({ messages: response.data.messages });
     } catch (error) {
       console.error('Error fetching messages:', error);
-      set({ isMessagesLoading: false });
     } finally {
       set({ isMessagesLoading: false });
     }
   },
 
   setSelectedUser: (user) => {
-    set({ selectedUser: user });
+    set({ selectedUser: user, messages: [] }); // clear messages when selecting new user
   },
 
   sendMessage: async (messageData) => {
@@ -49,5 +48,26 @@ export const useChatStore = create((set, get) => ({
     } catch (error) {
       console.error('Error sending message:', error);
     }
+  },
+
+  subscribeToMessages: () => {
+    const socket = useAuthStore.getState().socket;
+    const { selectedUser } = get();
+    if (!socket || !selectedUser) return;
+
+    socket.on('newMessage', (newMessage) => {
+      const { messages } = get();
+      if (
+        newMessage.senderId === selectedUser._id ||
+        newMessage.receiverId === selectedUser._id
+      ) {
+        set({ messages: [...messages, newMessage] });
+      }
+    });
+  },
+
+  unsubscribeFromMessages: () => {
+    const socket = useAuthStore.getState().socket;
+    if (socket) socket.off('newMessage');
   }
 }));

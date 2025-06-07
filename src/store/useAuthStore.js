@@ -1,19 +1,24 @@
 import { axiosInstance } from '@/libs/axios';
 import { showErrorMessage, showSuccessMessage } from '@/libs/toast';
+import { io } from 'socket.io-client';
 import { create } from 'zustand';
 
-export const useAuthStore = create((set) => ({
+const BASE_URL = 'http://localhost:8000';
+
+export const useAuthStore = create((set, get) => ({
   authUser: null,
   isCheckingAuth: true,
   isSigningUp: false,
   isLoggingIn: false,
   isUpdatingProfile: false,
   onlineUsers: [],
+  socket: null,
 
   checkAuth: async () => {
     try {
       const res = await axiosInstance.get('/auth/check');
       set({ authUser: res.data.user });
+      get().connectSocket();
     } catch (error) {
       console.error('Error checking auth:', error);
       set({ authUser: null });
@@ -47,6 +52,7 @@ export const useAuthStore = create((set) => ({
       showSuccessMessage({
         message: 'Logged out successfully !'
       });
+      get().disconnectSocket();
     } catch (error) {
       console.error('Error logging out:', error);
       showErrorMessage({
@@ -63,6 +69,7 @@ export const useAuthStore = create((set) => ({
       showSuccessMessage({
         message: 'Logged in successfully !'
       });
+      get().connectSocket();
     } catch (error) {
       console.error('Error logging in:', error);
       showErrorMessage({
@@ -98,5 +105,25 @@ export const useAuthStore = create((set) => ({
     }
   },
 
-  updateProfile: async (data) => {}
+  updateProfile: async (data) => {},
+
+  connectSocket: () => {
+    const { authUser } = get();
+    if (!authUser || get().socket?.connected) return;
+    const socket = io(BASE_URL, {
+      query: {
+        userId: authUser._id
+      }
+    });
+    socket.connect();
+    set({ socket: socket });
+
+    socket.on('getOnlineUsers', (userIds) => {
+      set({ onlineUsers: userIds });
+    });
+  },
+
+  disconnectSocket: () => {
+    if (get().socket?.connected) get().socket.disconnect();
+  }
 }));
