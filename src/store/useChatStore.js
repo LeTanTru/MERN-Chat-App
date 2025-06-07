@@ -1,4 +1,5 @@
 import { axiosInstance } from '@/libs/axios';
+import { showErrorMessage } from '@/libs/toast';
 import { useAuthStore } from '@/store/useAuthStore';
 import { create } from 'zustand';
 
@@ -8,6 +9,7 @@ export const useChatStore = create((set, get) => ({
   selectedUser: null,
   isUsersLoading: false,
   isMessagesLoading: false,
+  isMessageSending: false,
 
   getUsers: async () => {
     set({ isUsersLoading: true });
@@ -40,6 +42,7 @@ export const useChatStore = create((set, get) => ({
   sendMessage: async (messageData) => {
     const { selectedUser, messages } = get();
     try {
+      set({ isMessageSending: true });
       const response = await axiosInstance.post(
         `/message/send/${selectedUser._id}`,
         messageData
@@ -47,6 +50,11 @@ export const useChatStore = create((set, get) => ({
       set({ messages: [...messages, response.data.message] });
     } catch (error) {
       console.error('Error sending message:', error);
+      showErrorMessage({
+        message: error.response?.data?.message || 'Error sending message'
+      });
+    } finally {
+      set({ isMessageSending: false });
     }
   },
 

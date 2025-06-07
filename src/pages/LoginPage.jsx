@@ -1,15 +1,7 @@
 import AuthImagePattern from '@/components/AuthImagePattern';
 import { showErrorMessage } from '@/libs/toast';
 import { useAuthStore } from '@/store/useAuthStore';
-import {
-  Eye,
-  EyeOff,
-  Loader2,
-  Lock,
-  Mail,
-  MessageSquare,
-  User
-} from 'lucide-react';
+import { Eye, EyeOff, Loader2, Lock, Mail, MessageSquare } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
@@ -17,8 +9,8 @@ const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    email: 'letantru@cc.cc',
-    password: '12345678'
+    email: '',
+    password: ''
   });
   const { login, isLoggingIn, authUser } = useAuthStore();
 

@@ -3,7 +3,7 @@ import { showErrorMessage, showSuccessMessage } from '@/libs/toast';
 import { io } from 'socket.io-client';
 import { create } from 'zustand';
 
-const BASE_URL = 'http://localhost:8000';
+const BASE_URL = import.meta.env.VITE_API_URL;
 
 export const useAuthStore = create((set, get) => ({
   authUser: null,
@@ -82,6 +82,7 @@ export const useAuthStore = create((set, get) => ({
 
   uploadImage: async (file) => {
     try {
+      set({ isUpdatingProfile: true });
       const formData = new FormData();
       formData.append('image', file);
 
@@ -91,21 +92,36 @@ export const useAuthStore = create((set, get) => ({
         }
       });
 
-      showSuccessMessage({
-        message: 'Image uploaded successfully!'
-      });
-
-      return res.data; // { url, public_id }
+      return res.data;
     } catch (error) {
       console.error('Error uploading image:', error);
       showErrorMessage({
         message: error.response?.data?.message || 'Image upload failed'
       });
       return null;
+    } finally {
+      set({ isUpdatingProfile: false });
     }
   },
 
-  updateProfile: async (data) => {},
+  updateProfile: async (data) => {
+    try {
+      set({ isUpdatingProfile: true });
+      const res = await axiosInstance.put('/auth/update-profile', data);
+      set({ authUser: res.data.user });
+      showSuccessMessage({
+        message: 'Profile updated successfully!'
+      });
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      showErrorMessage({
+        message: error.response?.data?.message || 'Profile update failed'
+      });
+      set({ isUpdatingProfile: false });
+    } finally {
+      set({ isUpdatingProfile: false });
+    }
+  },
 
   connectSocket: () => {
     const { authUser } = get();
@@ -115,6 +131,7 @@ export const useAuthStore = create((set, get) => ({
         userId: authUser._id
       }
     });
+
     socket.connect();
     set({ socket: socket });
 

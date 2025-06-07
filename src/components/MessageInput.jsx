@@ -1,3 +1,4 @@
+import { useAuthStore } from '@/store/useAuthStore';
 import { useChatStore } from '@/store/useChatStore';
 import { Image, Send, X } from 'lucide-react';
 import { useRef, useState } from 'react';
@@ -5,8 +6,11 @@ import { useRef, useState } from 'react';
 const MessageInput = () => {
   const [text, setText] = useState('');
   const [imagePreview, setImagePreview] = useState(null);
+  const [selectedFile, setSelectedFile] = useState(null);
   const fileInputRef = useRef(null);
-  const { sendMessage } = useChatStore();
+  const { sendMessage, isMessageSending } = useChatStore();
+  const { uploadImage } = useAuthStore();
+  const [isUploading, setIsUploading] = useState(false);
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -17,6 +21,7 @@ const MessageInput = () => {
       };
       reader.readAsDataURL(file);
     }
+    setSelectedFile(file);
   };
 
   const removeImage = () => {
@@ -27,16 +32,29 @@ const MessageInput = () => {
   const handleSendMessage = async (e) => {
     e.preventDefault();
     if (!text.trim() && !imagePreview) return;
+
+    let uploadedImageUrl = null;
+
     try {
+      if (selectedFile) {
+        setIsUploading(true);
+        const res = await uploadImage(selectedFile);
+        uploadedImageUrl = res?.url;
+      }
+
       await sendMessage({
         text: text.trim(),
-        image: imagePreview
+        image: uploadedImageUrl
       });
+
       setText('');
       setImagePreview(null);
+      setSelectedFile(null);
       if (fileInputRef.current) fileInputRef.current.value = null;
     } catch (error) {
       console.error('Error sending message:', error);
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -64,7 +82,7 @@ const MessageInput = () => {
         <div className='flex flex-1 gap-2'>
           <input
             type='text'
-            className='input input-bordered input-sm sm:input-md w-full rounded-lg'
+            className='bg-base-200 block w-full rounded-lg border-2 p-2.5 text-sm transition-all duration-300 ease-linear focus:border-blue-500 focus:ring-blue-500'
             placeholder='Type a message...'
             value={text}
             onChange={(e) => setText(e.target.value)}
@@ -90,7 +108,11 @@ const MessageInput = () => {
           type='submit'
           disabled={!text.trim() && !imagePreview}
         >
-          <Send size={22} />
+          {isUploading || isMessageSending ? (
+            <span className='loading loading-spinner'></span>
+          ) : (
+            <Send size={22} />
+          )}
         </button>
       </form>
     </div>
